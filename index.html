@@ -214,18 +214,7 @@
     <select id="tanggalFilter" class="btn"></select>
     <input type="text" id="filter" class="btn" placeholder="Cari nama/keterangan" oninput="render()" />
   </div>
-  <table id="tabel">
-    <thead>
-      <tr>
-        <th>Nama</th>
-        <th>Jumlah</th>
-        <th>Keterangan</th>
-        <th>Waktu</th>
-        <th>Aksi</th>
-      </tr>
-    </thead>
-    <tbody></tbody>
-  </table>
+  <div id="card-list"></div>
   <div id="totalArea" class="total">Total: 0</div>
 </div>
 
@@ -312,7 +301,8 @@ async function isiTanggalFilter() {
   const select = document.getElementById("tanggalFilter");
   const snapshot = await db.collection("lemecah").get();
   const tanggalSet = new Set();
-  snapshot.forEach(doc => { const data = doc.data(); if (data.tanggal) tanggalSet.add(data.tanggal); });
+  snapshot.forEach(doc => {
+ const data = doc.data(); if (data.tanggal) tanggalSet.add(data.tanggal); });
   const today = new Date().toLocaleDateString("id-ID");
   const tanggalList = Array.from(tanggalSet).sort((a, b) => new Date(b) - new Date(a));
   select.innerHTML = '<option value="all">Semua Tanggal</option>';
@@ -325,32 +315,44 @@ async function isiTanggalFilter() {
   select.value = today;
 }
 
+
 async function render() {
-  const tbody = document.querySelector("#tabel tbody");
+  const container = document.getElementById("card-list");
   const filter = document.getElementById("filter").value.toLowerCase();
   const selectedTanggal = document.getElementById("tanggalFilter").value;
   const snapshot = await db.collection("lemecah").get();
-  tbody.innerHTML = "";
-  let totalDL = 0, totalBGL = 0;
+  container.innerHTML = "";
+  totalDL = 0; totalBGL = 0;
+  totalDL = 0; totalBGL = 0;
 
   snapshot.forEach(doc => {
     const d = doc.data();
     if ((selectedTanggal === "all" || d.tanggal === selectedTanggal) &&
         (d.nama.toLowerCase().includes(filter) || (d.keterangan || "").toLowerCase().includes(filter))) {
       const tr = document.createElement("tr");
+      
       const jumlah = d.jumlah.toUpperCase();
       if (jumlah.includes("BGL")) totalBGL += parseFloat(jumlah) || 0;
       if (jumlah.includes("DL")) totalDL += parseFloat(jumlah) || 0;
-      tr.innerHTML = `
-        <td data-label="Nama">${d.nama}</td>
-        <td data-label="Jumlah">${d.jumlah}</td>
-        <td data-label="Keterangan">${d.keterangan || "-"}</td>
-        <td data-label="Waktu">${d.waktu}</td>
-        <td data-label="Aksi">
+
+      const card = document.createElement("div");
+      card.style.border = "1px solid var(--border)";
+      card.style.borderRadius = "10px";
+      card.style.padding = "15px";
+      card.style.marginTop = "10px";
+      card.style.backgroundColor = "var(--card-dark)";
+      card.innerHTML = `
+        <div><strong>Nama:</strong> ${d.nama}</div>
+        <div><strong>Jumlah:</strong> ${d.jumlah}</div>
+        <div><strong>Keterangan:</strong> ${d.keterangan || "-"}</div>
+        <div><strong>Waktu:</strong> ${d.waktu}</div>
+        <div style="margin-top: 10px;">
           <button class="btn btn-info" onclick='editNote("${doc.id}", ${JSON.stringify(d)})'>✏️</button>
           <button class="btn btn-danger" onclick='hapusNote("${doc.id}")'>🗑️</button>
-        </td>`;
-      tbody.appendChild(tr);
+        </div>
+      `;
+      container.appendChild(card);
+
     }
   });
 
