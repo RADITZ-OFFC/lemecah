@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Catatan Bayar TAX / ACC TIM</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-dark: #1a1a1a;
+      --text-dark: #f0f0f0;
+      --card-dark: #2b2b2b;
+      --border: #555;
+      --primary-btn: #2ecc71;
+      --danger-btn: #e74c3c;
+      --info-btn: #3498db;
+    }
+    body {
+      font-family: 'Inter', sans-serif;
+      margin: 0;
+      padding: 20px;
+      background-color: var(--bg-dark);
+      color: var(--text-dark);
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+      box-sizing: border-box;
+    }
+    .container-card {
+      background: var(--card-dark);
+      padding: 25px;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+      max-width: 90%;
+      width: 700px;
+      margin: 20px auto;
+      box-sizing: border-box;
+      position: relative;
+    }
+    .btn {
+      cursor: pointer;
+      padding: 10px 15px;
+      border-radius: 8px;
+      border: none;
+      font-size: 1em;
+      font-weight: 500;
+      color: white;
+      background-color: var(--info-btn);
+      margin: 5px;
+    }
+    .btn-primary { background-color: var(--primary-btn); }
+    .btn-danger { background-color: var(--danger-btn); }
+    .btn-info { background-color: var(--info-btn); }
+    .total {
+      text-align: center;
+      margin-top: 25px;
+      font-size: 1.2em;
+      font-weight: 600;
+      color: var(--primary-btn);
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+    th, td {
+      border: 1px solid var(--border);
+      padding: 10px;
+      text-align: left;
+    }
+    th {
+      background-color: var(--info-btn);
+      color: white;
+    }
+    .modal-overlay {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.7);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+    .modal-overlay.visible { display: flex; }
+    .modal-content {
+      background: var(--card-dark);
+      padding: 20px;
+      border-radius: 10px;
+      max-width: 400px;
+      width: 90%;
+    }
+
+    #login-form {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-top: 20px;
+    }
+    #login-form input,
+    #login-form button {
+      width: 100%;
+      padding: 10px;
+      border-radius: 6px;
+      border: none;
+      font-size: 1em;
+      box-sizing: border-box;
+    }
+    #login-error-message {
+      margin-top: 10px;
+      font-size: 0.95em;
+    }
+
+    #form {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 20px;
+    }
+    #form input {
+      flex: 1 1 30%;
+      min-width: 120px;
+      padding: 8px;
+      border-radius: 6px;
+      border: none;
+    }
+    #form button {
+      padding: 10px 16px;
+      border-radius: 6px;
+      border: none;
+      background-color: var(--primary-btn);
+      color: white;
+      font-weight: 600;
+    }
+
+    .form-control {
+      padding: 10px;
+      border-radius: 6px;
+      border: none;
+      font-size: 1em;
+      width: 100%;
+      box-sizing: border-box;
+      background: #fff;
+      color: #000;
+    }
+  </style>
+
+  <!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyD1t9DMjVWLSJov1ad_lZ05tYlKhonmDko",
+      authDomain: "lemecah-53e7b.firebaseapp.com",
+      projectId: "lemecah-53e7b",
+      storageBucket: "lemecah-53e7b.appspot.com",
+      messagingSenderId: "62900097194",
+      appId: "1:62900097194:web:babb8c49472e030b13c0d3"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+  </script>
+</head>
+<body>
+
+<div id="login-container" class="container-card">
+  <h1>Login</h1>
+  <form id="login-form">
+    <input type="text" id="username" class="form-control" placeholder="Username" required />
+    <input type="password" id="password" class="form-control" placeholder="Password" required />
+    <button class="btn btn-primary" type="submit">Login</button>
+  </form>
+  <div id="login-error-message" style="color: red; display: none;">Username atau password salah!</div>
+</div>
+
+<div id="app-container" class="container-card" style="display:none;">
+  <button id="logoutBtn" class="btn btn-danger">Logout</button>
+  <h1>Catatan Bayar TAX / ACC TIM</h1>
+  <form id="form">
+    <input type="text" id="nama" placeholder="Nama" required />
+    <input type="text" id="jumlah" placeholder="Jumlah (misal: 200 DL / 1 BGL)" required />
+    <input type="text" id="keterangan" placeholder="Keterangan (TAX / ACC)" />
+    <button class="btn btn-primary" type="submit">Simpan</button>
+  </form>
+  <div class="button-group">
+    <select id="tanggalFilter" class="btn"></select>
+    <input type="text" id="filter" class="btn" placeholder="Cari nama/keterangan" oninput="render()" />
+  </div>
+  <table id="tabel">
+    <thead>
+      <tr>
+        <th>Nama</th>
+        <th>Jumlah</th>
+        <th>Keterangan</th>
+        <th>Waktu</th>
+        <th>Aksi</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+  <div id="totalArea" class="total">Total: 0</div>
+</div>
+
+<div id="editModal" class="modal-overlay">
+  <div class="modal-content">
+    <h2>Edit Catatan</h2>
+    <form id="edit-form">
+      <input type="hidden" id="editOriginalIndex" />
+      <input type="text" id="editNama" placeholder="Nama" required />
+      <input type="text" id="editJumlah" placeholder="Jumlah" required />
+      <input type="text" id="editKeterangan" placeholder="Keterangan" />
+      <div style="margin-top: 10px;">
+        <button type="submit" class="btn btn-primary">Simpan</button>
+        <button type="button" class="btn btn-danger" id="editCancel">Batal</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+const USERNAME = 'RADITZ';
+const PASSWORD = '12345';
+
+const loginContainer = document.getElementById('login-container');
+const appContainer = document.getElementById('app-container');
+
+function showApp() {
+  try {
+    loginContainer.style.display = 'none';
+    appContainer.style.display = 'block';
+    isiTanggalFilter();
+    render();
+  } catch (err) {
+    console.error("Gagal menampilkan aplikasi:", err);
+    alert("Terjadi kesalahan saat membuka aplikasi.");
+  }
+}
+
+function showLogin() {
+  loginContainer.style.display = 'block';
+  appContainer.style.display = 'none';
+}
+
+document.getElementById('login-form').addEventListener('submit', function(e) {
+  e.preventDefault();
+  const u = document.getElementById('username').value;
+  const p = document.getElementById('password').value;
+  if (u === USERNAME && p === PASSWORD) {
+    localStorage.setItem('isLoggedIn', 'true');
+    showApp();
+  } else {
+    document.getElementById('login-error-message').style.display = 'block';
+  }
+});
+
+document.getElementById('logoutBtn').addEventListener('click', () => {
+  localStorage.removeItem('isLoggedIn');
+  showLogin();
+});
+
+document.getElementById("form").addEventListener("submit", async function (e) {
+  e.preventDefault();
+  try {
+    const nama = document.getElementById("nama").value.trim();
+    const jumlah = document.getElementById("jumlah").value.trim();
+    const keterangan = document.getElementById("keterangan").value.trim();
+    const waktu = new Date().toLocaleString("id-ID");
+    const tanggal = new Date().toLocaleDateString("id-ID");
+
+    if (!nama || !jumlah) return alert("Nama dan jumlah wajib diisi!");
+
+    await db.collection("lemecah").add({ nama, jumlah, keterangan, waktu, tanggal });
+    this.reset();
+    console.log("Data berhasil dikirim ke Firestore");
+    isiTanggalFilter();
+    render();
+  } catch (err) {
+    console.error("Gagal simpan ke Firestore:", err);
+    alert("Gagal menyimpan data. Periksa koneksi atau izin Firebase.");
+  }
+});
+
+async function isiTanggalFilter() {
+  const select = document.getElementById("tanggalFilter");
+  const snapshot = await db.collection("lemecah").get();
+  const tanggalSet = new Set();
+  snapshot.forEach(doc => { const data = doc.data(); if (data.tanggal) tanggalSet.add(data.tanggal); });
+  const today = new Date().toLocaleDateString("id-ID");
+  const tanggalList = Array.from(tanggalSet).sort((a, b) => new Date(b) - new Date(a));
+  select.innerHTML = '<option value="all">Semua Tanggal</option>';
+  tanggalList.forEach(t => {
+    const opt = document.createElement("option");
+    opt.value = t;
+    opt.textContent = t === today ? t + " (Hari Ini)" : t;
+    select.appendChild(opt);
+  });
+  select.value = today;
+}
+
+async function render() {
+  const tbody = document.querySelector("#tabel tbody");
+  const filter = document.getElementById("filter").value.toLowerCase();
+  const selectedTanggal = document.getElementById("tanggalFilter").value;
+  const snapshot = await db.collection("lemecah").get();
+  tbody.innerHTML = "";
+  let totalDL = 0, totalBGL = 0;
+
+  snapshot.forEach(doc => {
+    const d = doc.data();
+    if ((selectedTanggal === "all" || d.tanggal === selectedTanggal) &&
+        (d.nama.toLowerCase().includes(filter) || (d.keterangan || "").toLowerCase().includes(filter))) {
+      const tr = document.createElement("tr");
+      const jumlah = d.jumlah.toUpperCase();
+      if (jumlah.includes("BGL")) totalBGL += parseFloat(jumlah) || 0;
+      if (jumlah.includes("DL")) totalDL += parseFloat(jumlah) || 0;
+      tr.innerHTML = `
+        <td>${d.nama}</td>
+        <td>${d.jumlah}</td>
+        <td>${d.keterangan || "-"}</td>
+        <td>${d.waktu}</td>
+        <td>
+          <button class="btn btn-info" onclick='editNote("${doc.id}", ${JSON.stringify(d)})'>✏️</button>
+          <button class="btn btn-danger" onclick='hapusNote("${doc.id}")'>🗑️</button>
+        </td>`;
+      tbody.appendChild(tr);
+    }
+  });
+
+  const total = `Total: ${Math.floor(totalDL / 100 + totalBGL)} BGL ${totalDL % 100 ? "dan " + (totalDL % 100) + " DL" : ""}`;
+  document.getElementById("totalArea").innerText = total;
+}
+
+async function hapusNote(id) {
+  await db.collection("lemecah").doc(id).delete();
+  render();
+}
+
+function editNote(id, data) {
+  document.getElementById("editOriginalIndex").value = id;
+  document.getElementById("editNama").value = data.nama;
+  document.getElementById("editJumlah").value = data.jumlah;
+  document.getElementById("editKeterangan").value = data.keterangan;
+  document.getElementById("editModal").classList.add("visible");
+}
+
+document.getElementById("edit-form").addEventListener("submit", async function(e) {
+  e.preventDefault();
+  const id = document.getElementById("editOriginalIndex").value;
+  const newData = {
+    nama: document.getElementById("editNama").value,
+    jumlah: document.getElementById("editJumlah").value,
+    keterangan: document.getElementById("editKeterangan").value
+  };
+  await db.collection("lemecah").doc(id).update(newData);
+  document.getElementById("editModal").classList.remove("visible");
+  render();
+});
+
+document.getElementById("editCancel").addEventListener("click", () => {
+  document.getElementById("editModal").classList.remove("visible");
+});
+
+window.onload = () => {
+  const isLoggedIn = localStorage.getItem("isLoggedIn");
+  isLoggedIn === "true" ? showApp() : showLogin();
+};
+</script>
+</body>
+</html>
