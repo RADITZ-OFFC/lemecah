@@ -53,6 +53,9 @@
     .btn-danger { background-color: var(--danger-btn); }
     .btn-info { background-color: var(--info-btn); }
     .total {
+  margin-top: 15px;
+  margin-bottom: 10px;
+  text-align: center;
       text-align: center;
       margin-top: 25px;
       font-size: 1.2em;
@@ -214,8 +217,8 @@
     <select id="tanggalFilter" class="btn"></select>
     <input type="text" id="filter" class="btn" placeholder="Cari nama/keterangan" oninput="render()" />
   </div>
-  <div id="card-list"></div>
   <div id="totalArea" class="total">Total: 0</div>
+  <div id="card-list"></div>
 </div>
 
 <div id="editModal" class="modal-overlay">
@@ -235,8 +238,8 @@
 </div>
 
 <script>
-const USERNAME = 'RADITZ';
-const PASSWORD = '12345';
+const USERNAME = 'OWNER';
+const PASSWORD = 'LEMECAH';
 
 const loginContainer = document.getElementById('login-container');
 const appContainer = document.getElementById('app-container');
