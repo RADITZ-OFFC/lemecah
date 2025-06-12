@@ -144,7 +144,34 @@
       background: #fff;
       color: #000;
     }
-  </style>
+  
+@media (max-width: 480px) {
+  #form {
+    flex-direction: column;
+  }
+  table, thead, tbody, th, td, tr {
+    display: block;
+    width: 100%;
+  }
+  thead {
+    display: none;
+  }
+  td {
+    text-align: right;
+    padding-left: 50%;
+    position: relative;
+  }
+  td::before {
+    content: attr(data-label);
+    position: absolute;
+    left: 10px;
+    width: 45%;
+    white-space: nowrap;
+    text-align: left;
+    font-weight: bold;
+  }
+}
+</style>
 
   <!-- Firebase SDK -->
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
@@ -315,11 +342,11 @@ async function render() {
       if (jumlah.includes("BGL")) totalBGL += parseFloat(jumlah) || 0;
       if (jumlah.includes("DL")) totalDL += parseFloat(jumlah) || 0;
       tr.innerHTML = `
-        <td>${d.nama}</td>
-        <td>${d.jumlah}</td>
-        <td>${d.keterangan || "-"}</td>
-        <td>${d.waktu}</td>
-        <td>
+        <td data-label="Nama">${d.nama}</td>
+        <td data-label="Jumlah">${d.jumlah}</td>
+        <td data-label="Keterangan">${d.keterangan || "-"}</td>
+        <td data-label="Waktu">${d.waktu}</td>
+        <td data-label="Aksi">
           <button class="btn btn-info" onclick='editNote("${doc.id}", ${JSON.stringify(d)})'>✏️</button>
           <button class="btn btn-danger" onclick='hapusNote("${doc.id}")'>🗑️</button>
         </td>`;
