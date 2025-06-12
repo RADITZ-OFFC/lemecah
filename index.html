@@ -225,12 +225,12 @@ const PASSWORD = '12345';
 const loginContainer = document.getElementById('login-container');
 const appContainer = document.getElementById('app-container');
 
-function showApp() {
+async function showApp() {
   try {
     loginContainer.style.display = 'none';
     appContainer.style.display = 'block';
-    isiTanggalFilter();
-    render();
+    await isiTanggalFilter(); // tunggu sampai tanggal filter selesai dimuat
+    await render();           // baru render data
   } catch (err) {
     console.error("Gagal menampilkan aplikasi:", err);
     alert("Terjadi kesalahan saat membuka aplikasi.");
